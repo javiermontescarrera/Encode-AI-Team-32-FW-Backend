@@ -56,7 +56,11 @@ npm run build
 
 ## Screenshots
 
-![image](https://github.com/Team9EncodeSolidity/main-tracker-backend/assets/11134288/d0072a29-c191-43b9-8d5a-da71fd685185)
+<img width="1448" alt="image" src="https://github.com/javiermontescarrera/Encode-AI-Team-32-FW-Backend/assets/7554008/fe1e2203-8430-4869-8fa4-53b26e4fc382">
+
+
+
+
 
 ---
 
