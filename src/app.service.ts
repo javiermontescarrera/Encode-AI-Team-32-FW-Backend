@@ -2,16 +2,16 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ethers } from 'ethers';
 import * as HRDiagnoseJson from './assets/HRDiagnose.json';
-
-import pinataSDK, { PinataOptions, PinataPinOptions } from '@pinata/sdk';
-// import fs from 'fs';
+import { PinataPinOptions } from '@pinata/sdk';
+// import { createReadStream } from 'fs';
+const pinataSDK = require('@pinata/sdk');
 
 @Injectable()
 export class AppService {
   hrDiagnoseContract: ethers.Contract;
   provider: ethers.Provider;
   wallet: ethers.Wallet;
-  pinata: pinataSDK;
+  // pinata: pinataSDK;
 
   constructor(private configService: ConfigService) {
     this.provider = new ethers.JsonRpcProvider(
@@ -37,8 +37,12 @@ export class AppService {
       this.wallet,
     );
 
-    this.pinata = new pinataSDK( process.env.PINATA_API_KEY, process.env.PINATA_SECRET_KEY);
+    // this.setPinataSDK();
   }
+
+  // async setPinataSDK() {
+  //   this.pinata = new pinataSDK(process.env.PINATA_API_KEY, process.env.PINATA_SECRET_KEY);
+  // }
 
   getHello(): string {
     return 'Main Backend App Running OK. Go to .../api/ for more!';
@@ -64,13 +68,15 @@ export class AppService {
   }
 
   async uploadDiagnose(args: any) {
-    if (Object.keys(args).length > 3) {
+    if (Object.keys(args).length > 2) {
       return new BadRequestException('Err:TooManyArgs');
     }
-    const { imageName, diagnose, imageContent } = args;
+    let { imageName, imageContent } = args;
 
-    // const src = "./css-logo.png";
-    // const file = fs.createReadStream(src);
+    const pinata = new pinataSDK(process.env.PINATA_API_KEY, process.env.PINATA_SECRET_KEY);
+
+    // const src = "./DivineMercy.jpeg";
+    // imageContent = createReadStream(src);
     
     const options: PinataPinOptions = {
         pinataMetadata: {
@@ -81,12 +87,24 @@ export class AppService {
         }
     }
 
-    this.pinata.pinFileToIPFS(imageContent, options).then((result) => {
+    pinata.pinFileToIPFS(imageContent, options).then((result) => {
         console.log(result);
         return result;
     }).catch((err) => {
         console.error(err);
     });
+  }
+
+  async getPatientDiagnoses(args: any) {
+    if (Object.keys(args).length > 1) {
+      return new BadRequestException('Err:TooManyArgs');
+    }
+    const { patientAddress } = args;
+    try {
+      return this.hrDiagnoseContract.getPatientDiagnoses(patientAddress);
+    } catch (e) {
+      return new BadRequestException('Err:WrongCt', e);
+    }
   }
 
 }

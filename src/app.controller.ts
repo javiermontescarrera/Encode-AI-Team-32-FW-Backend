@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Param } from '@nestjs/common';
 import { AppService } from './app.service';
 import {
   UploadDiagnoseDto,
+  GetPatientDiagnosesDto,
 } from './dtos/app.dto';
 
 @Controller()
@@ -28,9 +29,16 @@ export class AppController {
     return { result: await this.appService.getContractAbi() };
   }
 
-  @Post('/set-tracker-contract-address')
+  @Post('/upload-diagnose')
   async uploadDiagnose(@Body() body: UploadDiagnoseDto) {
     return { result: await this.appService.uploadDiagnose(body) };
   }
+
+  @Post('/get-patient-diagnoses')
+  async getPatientDiagnoses(@Body() body: GetPatientDiagnosesDto) {
+    return { result: await this.appService.getPatientDiagnoses(body) };
+  }
+
+  
 
 }

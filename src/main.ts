@@ -7,7 +7,7 @@ async function bootstrap() {
   app.enableCors();
 
   const config = new DocumentBuilder()
-    .setTitle('API example')
+    .setTitle('AI Diagnose API docs')
     .setDescription('The API description')
     .setVersion('1.0')
     .addTag('example')
