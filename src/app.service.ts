@@ -38,6 +38,11 @@ export class AppService {
     );
 
     // this.setPinataSDK();
+
+    // As we return a bigint as part of a response, we need to update the BigInt prototype:
+    BigInt.prototype['toJSON'] = function () { 
+      return Number(this)
+    }
   }
 
   // async setPinataSDK() {
@@ -101,7 +106,25 @@ export class AppService {
     }
     const { patientAddress } = args;
     try {
-      return this.hrDiagnoseContract.getPatientDiagnoses(patientAddress);
+      const diagnoses = await this.hrDiagnoseContract.getPatientDiagnoses(patientAddress);
+      // console.log(diagnoses);
+      return diagnoses;
+    } catch (e) {
+      return new BadRequestException('Err:WrongCt', e);
+    }
+  }
+  async getDiagnoseDetails(args:any) {
+    if (Object.keys(args).length > 1) {
+      return new BadRequestException('Err:TooManyArgs');
+    }
+    const { diagnoseHash } = args;
+
+    try {
+      const diagnoseDetails = await this.hrDiagnoseContract.diagnoses(diagnoseHash);
+      // console.log(diagnoseDetails);
+      return diagnoseDetails;
+      // const diagnose: string = tx[0];
+      // const diagnoseTimestamp: bigint = tx[1];
     } catch (e) {
       return new BadRequestException('Err:WrongCt', e);
     }

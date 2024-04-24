@@ -23,3 +23,12 @@ export class GetPatientDiagnosesDto {
   })
   patientAddress: string;
 }
+
+export class GetDiagnoseDetailsDto {
+  @ApiProperty({
+    type: String,
+    required: true,
+    default: "",
+  })
+  diagnoseHash: string;
+}

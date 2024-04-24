@@ -3,6 +3,7 @@ import { AppService } from './app.service';
 import {
   UploadDiagnoseDto,
   GetPatientDiagnosesDto,
+  GetDiagnoseDetailsDto,
 } from './dtos/app.dto';
 
 @Controller()
@@ -39,6 +40,9 @@ export class AppController {
     return { result: await this.appService.getPatientDiagnoses(body) };
   }
 
-  
+  @Post('/get-diagnose-details')
+  async getDiagnoseDetails(@Body() body: GetDiagnoseDetailsDto) {
+    return { result: await this.appService.getDiagnoseDetails(body) };
+  }
 
 }
