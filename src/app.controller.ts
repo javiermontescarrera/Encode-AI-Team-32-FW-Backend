@@ -1,7 +1,19 @@
-import { Controller, Get, Post, Body, Param } from '@nestjs/common';
+import { 
+  Controller, 
+  Get, 
+  Post, 
+  Body, 
+  UseInterceptors, 
+  UploadedFile, 
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { AppService } from './app.service';
+import { createReadStream } from 'fs';
 import {
-  UploadDiagnoseDto,
+  IPFSUploadDto,
+  RecordDiagnoseDto,
   GetPatientDiagnosesDto,
   GetDiagnoseDetailsDto,
 } from './dtos/app.dto';
@@ -30,9 +42,19 @@ export class AppController {
     return { result: await this.appService.getContractAbi() };
   }
 
-  @Post('/upload-diagnose')
-  async uploadDiagnose(@Body() body: UploadDiagnoseDto) {
-    return { result: await this.appService.uploadDiagnose(body) };
+  // @Post('/generate-image')
+  // async generateDiagnose(@Body() body: GenerateDiagnoseDto) {
+  //   return { result: await this.appService.uploadDiagnose(body) };
+  // }
+
+  // @Post('/upload-image')
+  // async uploadImage(@Body() body: UploadImageDto) {
+  //   return { result: await this.appService.uploadImage(body) };
+  // }
+
+  @Post('/record-diagnose')
+  async recordDiagnose(@Body() body: RecordDiagnoseDto) {
+    return { result: await this.appService.recordDiagnose(body) };
   }
 
   @Post('/get-patient-diagnoses')
@@ -45,4 +67,40 @@ export class AppController {
     return { result: await this.appService.getDiagnoseDetails(body) };
   }
 
+  @Post('/upload-image')
+  @UseInterceptors(FileInterceptor('image', {
+    storage: diskStorage({
+      destination: './uploads',
+      filename: (req, file, callback) => {
+        const uniqueSuffix =
+          Date.now() + '-' + Math.round(Math.random() * 1e9);
+        const ext = extname(file.originalname);
+        const filename = `${uniqueSuffix}${ext}`;
+        callback(null, filename);
+      },
+    }),
+  }))
+  async uploadImage(@UploadedFile() file: Express.Multer.File) {
+    // console.log(file);
+    const ipfsDto = new IPFSUploadDto();
+    ipfsDto.imageName=file.filename;
+    ipfsDto.imageContent=createReadStream(`./uploads/${file.filename}`);
+
+    try {
+      const ipfsResponse = await this.appService.ipfsUpload(ipfsDto);
+      // console.log(ipfsResponse);
+
+
+      // const blockchainRecordDto = new RecordDiagnoseDto();
+      // blockchainRecordDto.ipfsHash = ipfsResponse.IpfsHash;
+      // blockchainRecordDto.aiDiagnose = "";
+      // console.log(`blockchainRecordDto: ${JSON.stringify(blockchainRecordDto)}`);
+      // const recordResponse = await this.appService.recordDiagnose(blockchainRecordDto);
+
+      return { result: ipfsResponse };
+    } catch (error) {
+      console.error(error);
+    }
+    
+  }
 }

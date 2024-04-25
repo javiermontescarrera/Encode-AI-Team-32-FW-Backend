@@ -3,7 +3,6 @@ import { ConfigService } from '@nestjs/config';
 import { ethers } from 'ethers';
 import * as HRDiagnoseJson from './assets/HRDiagnose.json';
 import { PinataPinOptions } from '@pinata/sdk';
-// import { createReadStream } from 'fs';
 const pinataSDK = require('@pinata/sdk');
 
 @Injectable()
@@ -11,7 +10,6 @@ export class AppService {
   hrDiagnoseContract: ethers.Contract;
   provider: ethers.Provider;
   wallet: ethers.Wallet;
-  // pinata: pinataSDK;
 
   constructor(private configService: ConfigService) {
     this.provider = new ethers.JsonRpcProvider(
@@ -37,17 +35,11 @@ export class AppService {
       this.wallet,
     );
 
-    // this.setPinataSDK();
-
     // As we return a bigint as part of a response, we need to update the BigInt prototype:
     BigInt.prototype['toJSON'] = function () { 
       return Number(this)
     }
   }
-
-  // async setPinataSDK() {
-  //   this.pinata = new pinataSDK(process.env.PINATA_API_KEY, process.env.PINATA_SECRET_KEY);
-  // }
 
   getHello(): string {
     return 'Main Backend App Running OK. Go to .../api/ for more!';
@@ -72,16 +64,13 @@ export class AppService {
     return HRDiagnoseJson.abi;
   }
 
-  async uploadDiagnose(args: any) {
+  async ipfsUpload(args: any) {
     if (Object.keys(args).length > 2) {
       return new BadRequestException('Err:TooManyArgs');
     }
     let { imageName, imageContent } = args;
 
     const pinata = new pinataSDK(process.env.PINATA_API_KEY, process.env.PINATA_SECRET_KEY);
-
-    // const src = "./DivineMercy.jpeg";
-    // imageContent = createReadStream(src);
     
     const options: PinataPinOptions = {
         pinataMetadata: {
@@ -92,12 +81,33 @@ export class AppService {
         }
     }
 
-    pinata.pinFileToIPFS(imageContent, options).then((result) => {
-        console.log(result);
-        return result;
-    }).catch((err) => {
-        console.error(err);
-    });
+    return (
+        pinata.pinFileToIPFS(imageContent, options).then((result) => {
+          console.log(result);
+          return result;
+        }).catch((err: any) => {
+          console.error(err);
+          return err;
+        })
+    );
+  }
+
+  async recordDiagnose(args:any){
+    if (Object.keys(args).length > 2) {
+      return new BadRequestException('Err:TooManyArgs');
+    }
+    let { ipfsHash, aiDiagnose } = args;
+
+    try {
+      const tx = await this.hrDiagnoseContract.recordDiagnose(
+        ipfsHash,
+        aiDiagnose
+      );
+
+      return tx;
+    } catch (e) {
+      return new BadRequestException('Err:WrongCt', e);
+    }
   }
 
   async getPatientDiagnoses(args: any) {
@@ -113,6 +123,7 @@ export class AppService {
       return new BadRequestException('Err:WrongCt', e);
     }
   }
+
   async getDiagnoseDetails(args:any) {
     if (Object.keys(args).length > 1) {
       return new BadRequestException('Err:TooManyArgs');
@@ -123,8 +134,6 @@ export class AppService {
       const diagnoseDetails = await this.hrDiagnoseContract.diagnoses(diagnoseHash);
       // console.log(diagnoseDetails);
       return diagnoseDetails;
-      // const diagnose: string = tx[0];
-      // const diagnoseTimestamp: bigint = tx[1];
     } catch (e) {
       return new BadRequestException('Err:WrongCt', e);
     }

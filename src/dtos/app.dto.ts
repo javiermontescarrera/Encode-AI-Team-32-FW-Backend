@@ -1,18 +1,33 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ethers } from 'ethers';
+import { ReadStream } from 'fs';
 
-export class UploadDiagnoseDto {
+export class IPFSUploadDto {
   @ApiProperty({
     type: String,
     required: true,
   })
   imageName: string;
   @ApiProperty({
-    type: String,
+    type: ReadStream,
     required: true,
     default: null,
   })
-  imageContent: any
+  imageContent: ReadStream
+}
+
+export class RecordDiagnoseDto {
+  @ApiProperty({
+    type: String,
+    required: true,
+  })
+  ipfsHash: string;
+  @ApiProperty({
+    type: String,
+    required: true,
+    default: "",
+  })
+  aiDiagnose: string
 }
 
 export class GetPatientDiagnosesDto {
