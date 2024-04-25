@@ -54,7 +54,15 @@ export class AppController {
 
   @Post('/upload-to-ipfs')
   async ipfsUpload(@Body() body: IPFSUploadDto) {
-    return { result: await this.appService.ipfsUpload(body) };
+    try {
+      body.imageContent=createReadStream(`${uploadPath}/${body.imageName}`);
+      // console.log(`ipfs body: ${JSON.stringify(body)}`);
+      const ipfsResponse = await this.appService.ipfsUpload(body);
+      
+      return { result: ipfsResponse };
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   @Post('/record-diagnose')
@@ -87,17 +95,10 @@ export class AppController {
     }),
   }))
   async uploadImage(@UploadedFile() file: Express.Multer.File) {
-    console.log(file);
+    // console.log(file);
     return { result: file };
 
-    // const ipfsDto = new IPFSUploadDto();
-    // ipfsDto.imageName=file.filename;
-    
-    // ipfsDto.imageContent=createReadStream(`${uploadPath}/${file.filename}`);
-
     try {
-      // const ipfsResponse = await this.appService.ipfsUpload(ipfsDto);
-      // // console.log(ipfsResponse);
 
 
       // const diagnoseDto = new CallPythonDto();
@@ -117,9 +118,9 @@ export class AppController {
     }
   }
 
-  @Post('/call-python')
-  async callPython(@Body() body: CallPythonDto) {
-    return { result: await this.appService.callPython(body) };
-  }
+  // @Post('/call-python')
+  // async callPython(@Body() body: CallPythonDto) {
+  //   return { result: await this.appService.callPython(body) };
+  // }
 
 }
