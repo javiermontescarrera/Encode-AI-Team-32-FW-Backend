@@ -16,10 +16,15 @@ import {
   RecordDiagnoseDto,
   GetPatientDiagnosesDto,
   GetDiagnoseDetailsDto,
+  // CallPythonDto,
 } from './dtos/app.dto';
+
+const uploadPath = "../Encode-Club-Team-32-Final-Project/Object_Detection";
+// const uploadPath = process.env.PYTHON_PATH;
 
 @Controller()
 export class AppController {
+
   constructor(private readonly appService: AppService) { }
 
   @Get('/')
@@ -47,10 +52,10 @@ export class AppController {
   //   return { result: await this.appService.uploadDiagnose(body) };
   // }
 
-  // @Post('/upload-image')
-  // async uploadImage(@Body() body: UploadImageDto) {
-  //   return { result: await this.appService.uploadImage(body) };
-  // }
+  @Post('/upload-to-ipfs')
+  async ipfsUpload(@Body() body: IPFSUploadDto) {
+    return { result: await this.appService.ipfsUpload(body) };
+  }
 
   @Post('/record-diagnose')
   async recordDiagnose(@Body() body: RecordDiagnoseDto) {
@@ -70,7 +75,8 @@ export class AppController {
   @Post('/upload-image')
   @UseInterceptors(FileInterceptor('image', {
     storage: diskStorage({
-      destination: './uploads',
+      // destination: './uploads',
+      destination: uploadPath,
       filename: (req, file, callback) => {
         const uniqueSuffix =
           Date.now() + '-' + Math.round(Math.random() * 1e9);
@@ -81,26 +87,39 @@ export class AppController {
     }),
   }))
   async uploadImage(@UploadedFile() file: Express.Multer.File) {
-    // console.log(file);
-    const ipfsDto = new IPFSUploadDto();
-    ipfsDto.imageName=file.filename;
-    ipfsDto.imageContent=createReadStream(`./uploads/${file.filename}`);
+    console.log(file);
+    return { result: file };
+
+    // const ipfsDto = new IPFSUploadDto();
+    // ipfsDto.imageName=file.filename;
+    
+    // ipfsDto.imageContent=createReadStream(`${uploadPath}/${file.filename}`);
 
     try {
-      const ipfsResponse = await this.appService.ipfsUpload(ipfsDto);
-      // console.log(ipfsResponse);
+      // const ipfsResponse = await this.appService.ipfsUpload(ipfsDto);
+      // // console.log(ipfsResponse);
 
+
+      // const diagnoseDto = new CallPythonDto();
+      // diagnoseDto.imageFileName = file.filename;
+      // const diagnoseResponse = await this.appService.callPython(diagnoseDto);
+      // console.log(`diagnoseResponse: ${JSON.stringify(diagnoseResponse)}`);
+      // return { result: diagnoseResponse };
 
       // const blockchainRecordDto = new RecordDiagnoseDto();
       // blockchainRecordDto.ipfsHash = ipfsResponse.IpfsHash;
       // blockchainRecordDto.aiDiagnose = "";
       // console.log(`blockchainRecordDto: ${JSON.stringify(blockchainRecordDto)}`);
       // const recordResponse = await this.appService.recordDiagnose(blockchainRecordDto);
-
-      return { result: ipfsResponse };
+      // return { result: recordResponse };
     } catch (error) {
       console.error(error);
     }
-    
   }
+
+  @Post('/call-python')
+  async callPython(@Body() body: CallPythonDto) {
+    return { result: await this.appService.callPython(body) };
+  }
+
 }

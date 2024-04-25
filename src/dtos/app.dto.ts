@@ -47,3 +47,12 @@ export class GetDiagnoseDetailsDto {
   })
   diagnoseHash: string;
 }
+
+// export class CallPythonDto {
+//   @ApiProperty({
+//     type: String,
+//     required: true,
+//     default: "",
+//   })
+//   imageFileName: string;
+// }

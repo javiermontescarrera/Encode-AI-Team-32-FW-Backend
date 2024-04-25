@@ -4,12 +4,15 @@ import { ethers } from 'ethers';
 import * as HRDiagnoseJson from './assets/HRDiagnose.json';
 import { PinataPinOptions } from '@pinata/sdk';
 const pinataSDK = require('@pinata/sdk');
+// const spawner = require('node:child_process').spawn;
 
 @Injectable()
 export class AppService {
   hrDiagnoseContract: ethers.Contract;
   provider: ethers.Provider;
   wallet: ethers.Wallet;
+  pythonPath: string;
+  // cmdResponse: any;
 
   constructor(private configService: ConfigService) {
     this.provider = new ethers.JsonRpcProvider(
@@ -34,6 +37,9 @@ export class AppService {
       HRDiagnoseJson.abi,
       this.wallet,
     );
+
+    // this.pythonPath = process.env.PYTHON_PATH;
+    this.pythonPath = "../Encode-Club-Team-32-Final-Project/Object_Detection";
 
     // As we return a bigint as part of a response, we need to update the BigInt prototype:
     BigInt.prototype['toJSON'] = function () { 
@@ -139,4 +145,37 @@ export class AppService {
     }
   }
 
+  // async callPython(args:any) {
+  //   if (Object.keys(args).length > 1) {
+  //     return new BadRequestException('Err:TooManyArgs');
+  //   }
+  //   const { imageFileName } = args;
+
+  //   try {
+
+  //     const python_process = spawner('python',[`${this.pythonPath}/object_detection.py`, imageFileName]);
+
+  //     await this.cmd(python_process);
+  //     return this.cmdResponse;
+
+  //   } catch (e) {
+  //     // return new BadRequestException('Err:WrongCt', e);
+  //     return(e);
+  //   }
+  // }
+
+  // cmd(python_process) {    
+  //   return new Promise((resolveFunc) => {
+  //     python_process.stdout.on('data', (data: any) => {
+  //       // const response = JSON.parse(data.toString());
+  //       const response = data.toString();
+  //       // console.log(`Data received from python script: ${response}`);
+  //       // return JSON.parse(response);
+  //       this.cmdResponse = JSON.parse(response);
+  //     });
+  //     python_process.on("exit", (code: any) => {
+  //       resolveFunc(code);
+  //     });
+  //   });
+  // }
 }
